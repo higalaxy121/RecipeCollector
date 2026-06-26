@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="얌얌쩝쩝" />
+  <meta name="theme-color" content="#5B8C6E" />
+  <title>은호의 얌얌쩝쩝</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="얌얌쩝쩝" />
+  <style>
+    :root {
+      --green:      #5B8C6E;
+      --green-lt:   #7FAD8C;
+      --green-pale: #EBF5EE;
+      --green-bg:   #F4FAF6;
+      --bg:         #FFFFFF;
+      --card:       #FFFFFF;
+      --text:       #1C2B1C;
+      --text2:      #5A7A5A;
+      --text3:      #9AB89A;
+      --border:     #E4EFE4;
+      --shadow:     0 1px 8px rgba(30,60,30,.07);
+      --shadow-md:  0 4px 20px rgba(30,60,30,.10);
+      --r:          18px;
+      --r-sm:       12px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    html, body {
+      font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--bg);
+      padding: 56px 20px 24px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* 아이 사진 원형 */
+    .photo-ring {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .photo-ring img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    /* 사진 없을 때 플레이스홀더 */
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2.5px dashed var(--green-lt);
+      background: var(--green-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--green-lt);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .photo-placeholder span { font-size: 28px; }
+
+    /* 사진 변경 뱃지 */
+    .photo-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 24px;
+      height: 24px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+
+    #photoInput { display: none; }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .header-title em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .header-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    /* ── SEARCH ── */
+    .search-wrap {
+      background: var(--bg);
+      padding: 14px 16px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--green-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 28px;
+      padding: 10px 16px;
+      gap: 8px;
+      transition: border-color .18s;
+    }
+
+    .search-box:focus-within { border-color: var(--green-lt); }
+
+    .search-icon { font-size: 15px; flex-shrink: 0; }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .search-input::placeholder { color: var(--text3); }
+
+    .search-clear {
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: var(--text3);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 11px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear.on { display: flex; }
+
+    /* ── STATS ── */
+    .stats {
+      padding: 12px 18px 4px;
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── GRID ── */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 8px 14px 100px;
+    }
+
+    /* ── EMPTY ── */
+    .empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .empty-icon { font-size: 52px; margin-bottom: 12px; }
+    .empty h3   { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .empty p    { font-size: 13px; color: var(--text3); line-height: 1.65; }
+
+    /* ── CARD ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .recipe-card {
+      background: var(--card);
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      overflow: hidden;
+      animation: fadeUp .22s ease both;
+      transition: transform .16s, box-shadow .16s;
+    }
+
+    .recipe-card:active { transform: scale(.97); box-shadow: none; }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      position: relative;
+      background: var(--green-bg);
+    }
+
+    /* 카테고리별 배경 */
+    .cat-죽   { background: #FFF8EE; }
+    .cat-밥   { background: #F0FAF2; }
+    .cat-간식 { background: #FFF0F5; }
+    .cat-국   { background: #F0F4FF; }
+    .cat-반찬 { background: #F5F0FF; }
+    .cat-기타 { background: var(--green-bg); }
+
+    .cat-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.85);
+      color: var(--text2);
+      backdrop-filter: blur(6px);
+    }
+
+    .card-body { padding: 11px 12px 13px; }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
+    .card-ings {
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(91,140,110,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      transition: transform .15s;
+    }
+
+    .fab:active { transform: scale(.92); }
+
+    /* ── BACKDROP ── */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,20,10,.4);
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .25s, visibility .25s;
+      backdrop-filter: blur(2px);
+    }
+
+    .backdrop.open { opacity:1; visibility:visible; }
+
+    /* ── BOTTOM SHEET ── */
+    .sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      z-index: 110;
+      max-height: 93vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      transform: translateY(102%);
+      transition: transform .3s cubic-bezier(.32,0,.2,1);
+      box-shadow: 0 -4px 32px rgba(10,30,10,.14);
+    }
+
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: #DDD;
+      border-radius: 2px;
+      margin: 12px auto 0;
+    }
+
+    /* ── DETAIL SHEET ── */
+    .detail-hero {
+      width: 100%;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+    }
+
+    .detail-body { padding: 20px 20px 50px; }
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .detail-cat {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--green-pale);
+      color: var(--green);
+    }
+
+    .detail-title {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 22px;
+    }
+
+    .sec-hdr {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    .sec { margin-bottom: 24px; }
+
+    .ing-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .ing-chip {
+      background: var(--green-bg);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .step-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .step-item { display: flex; gap: 12px; align-items: flex-start; }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .step-text {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .tip-box {
+      background: #FFFBF2;
+      border: 1.5px solid #F0E4C0;
+      border-radius: var(--r-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #7A6030;
+    }
+
+    .tip-box::before { content: '💡 '; }
+
+    .src-tag { font-size: 11px; color: var(--text3); margin-top: 18px; }
+
+    .del-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: 1.5px solid #FFCDD2;
+      border-radius: var(--r-sm);
+      background: none;
+      color: #E53935;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── 후기 섹션 ── */
+    .review-sec {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1.5px dashed var(--border);
+    }
+
+    .review-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .rating-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .r-btn {
+      padding: 8px 14px;
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .r-btn.on {
+      border-color: var(--green);
+      background: var(--green-pale);
+      color: var(--green);
+    }
+
+    .rev-comment {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      resize: none;
+      line-height: 1.65;
+      transition: border-color .18s;
+      box-sizing: border-box;
+    }
+
+    .rev-comment:focus { border-color: var(--green-lt); }
+    .rev-comment::placeholder { color: var(--text3); }
+
+    .rev-save {
+      width: 100%;
+      margin-top: 10px;
+      padding: 13px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s;
+    }
+
+    .rev-save:active { opacity: .85; }
+
+    .rev-saved-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: var(--green-pale);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* ── ADD SHEET ── */
+    .add-hdr {
+      padding: 8px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .add-ttl { font-size: 17px; font-weight: 800; }
+
+    .sh-close {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: var(--green-bg);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-form { padding: 18px 20px 44px; display: flex; flex-direction: column; gap: 16px; }
+
+    .fgrp { display: flex; flex-direction: column; gap: 6px; }
+
+    .flabel { font-size: 13px; font-weight: 700; color: var(--text); }
+    .flabel .req { color: var(--green); margin-left: 2px; }
+    .flabel .opt { color: var(--text3); font-weight:400; font-size:12px; margin-left:4px; }
+
+    .finput, .ftarea, .fsel {
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      color: var(--text);
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color .18s;
+      width: 100%;
+    }
+
+    .finput:focus, .ftarea:focus, .fsel:focus { border-color: var(--green-lt); }
+    .finput::placeholder, .ftarea::placeholder { color: var(--text3); }
+    .ftarea { resize: none; line-height: 1.65; }
+
+    .emoji-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .emoji-opt {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--border);
+      border-radius: var(--r-sm);
+      background: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+
+    .emoji-opt.on { border-color: var(--green); background: var(--green-pale); }
+
+    .hint { font-size: 11px; color: var(--text3); }
+
+    .save-btn {
+      padding: 15px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .save-btn:active { opacity: .85; }
+
+    /* ── STAGGER ── */
+    .recipe-card:nth-child(2) { animation-delay:.04s }
+    .recipe-card:nth-child(3) { animation-delay:.08s }
+    .recipe-card:nth-child(4) { animation-delay:.12s }
+    .recipe-card:nth-child(5) { animation-delay:.16s }
+    .recipe-card:nth-child(6) { animation-delay:.20s }
+    .recipe-card:nth-child(7) { animation-delay:.24s }
+    .recipe-card:nth-child(8) { animation-delay:.28s }
+
+    mark {
+      background: #C8F0D0;
+      color: inherit;
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    /* ── CATEGORY TABS ── */
+    .cat-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cat-tabs::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .cat-tab.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .cat-tab[data-cat="즐겨찾기"].active {
+      background: #F5A623;
+      border-color: #F5A623;
+      color: #fff;
+    }
+
+    /* ── STAR BUTTON (card) ── */
+    .star-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .15s;
+      z-index: 2;
+    }
+    .star-btn:active { transform: scale(.85); }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="app-header">
+
+  <!-- 아이 사진 원형 (클릭하면 사진 교체) -->
+  <div class="photo-ring" onclick="document.getElementById('photoInput').click()">
+    <div class="photo-placeholder" id="photoPlaceholder">
+      <span>👶</span>
+      사진 추가
+    </div>
+    <img id="photoImg" src="" alt="은호" style="display:none;" />
+    <div class="photo-badge">📷</div>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" onchange="setPhoto(this)" />
+
+  <div class="header-title"><em>은호</em>의 얌얌쩝쩝</div>
+  <div class="header-sub">🌿 맛있는 이유식 레시피 모음</div>
+</div>
+
+<!-- ── SEARCH ── -->
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput"
+      placeholder="요리 이름, 재료로 검색…"
+      oninput="onSearch()" autocomplete="off" autocorrect="off" />
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="cat-tabs" id="catTabs">
+  <button class="cat-tab active" data-cat="전체" onclick="setTab(this)">전체</button>
+  <button class="cat-tab" data-cat="즐겨찾기" onclick="setTab(this)">⭐ 즐겨찾기</button>
+  <button class="cat-tab" data-cat="밥" onclick="setTab(this)">🍚 밥</button>
+  <button class="cat-tab" data-cat="죽" onclick="setTab(this)">🥣 죽</button>
+  <button class="cat-tab" data-cat="반찬" onclick="setTab(this)">🥢 반찬</button>
+  <button class="cat-tab" data-cat="국" onclick="setTab(this)">🍜 국</button>
+  <button class="cat-tab" data-cat="간식" onclick="setTab(this)">🍪 간식</button>
+  <button class="cat-tab" data-cat="기타" onclick="setTab(this)">기타</button>
+</div>
+
+<div class="stats" id="statsEl"></div>
+<div class="recipe-grid" id="grid"></div>
+
+<!-- ── FAB ── -->
+<button class="fab" onclick="openAdd()">＋</button>
+
+<!-- ── DETAIL ── -->
+<div class="backdrop" id="db" onclick="closeDetail()"></div>
+<div class="sheet" id="ds">
+  <div class="sheet-handle"></div>
+  <div id="dc"></div>
+</div>
+
+<!-- ── ADD ── -->
+<div class="backdrop" id="ab" onclick="closeAdd()"></div>
+<div class="sheet" id="as">
+  <div class="sheet-handle"></div>
+  <div class="add-hdr">
+    <span class="add-ttl">✏️ 레시피 추가</span>
+    <button class="sh-close" onclick="closeAdd()">✕</button>
+  </div>
+  <div class="add-form">
+
+    <div class="fgrp">
+      <label class="flabel">아이콘</label>
+      <div class="emoji-row" id="emojiRow">
+        <button class="emoji-opt on"  data-e="🍚" onclick="pickEmoji(this)">🍚</button>
+        <button class="emoji-opt" data-e="🍗" onclick="pickEmoji(this)">🍗</button>
+        <button class="emoji-opt" data-e="🥩" onclick="pickEmoji(this)">🥩</button>
+        <button class="emoji-opt" data-e="🐟" onclick="pickEmoji(this)">🐟</button>
+        <button class="emoji-opt" data-e="🥚" onclick="pickEmoji(this)">🥚</button>
+        <button class="emoji-opt" data-e="🫙" onclick="pickEmoji(this)">🫙</button>
+        <button class="emoji-opt" data-e="🥦" onclick="pickEmoji(this)">🥦</button>
+        <button class="emoji-opt" data-e="🥕" onclick="pickEmoji(this)">🥕</button>
+        <button class="emoji-opt" data-e="🍠" onclick="pickEmoji(this)">🍠</button>
+        <button class="emoji-opt" data-e="🎃" onclick="pickEmoji(this)">🎃</button>
+        <button class="emoji-opt" data-e="🍌" onclick="pickEmoji(this)">🍌</button>
+        <button class="emoji-opt" data-e="🍎" onclick="pickEmoji(this)">🍎</button>
+        <button class="emoji-opt" data-e="🍞" onclick="pickEmoji(this)">🍞</button>
+        <button class="emoji-opt" data-e="🫕" onclick="pickEmoji(this)">🫕</button>
+        <button class="emoji-opt" data-e="🍄" onclick="pickEmoji(this)">🍄</button>
+        <button class="emoji-opt" data-e="🍲" onclick="pickEmoji(this)">🍲</button>
+      </div>
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">분류 <span class="req">*</span></label>
+      <select class="fsel" id="f_cat">
+        <option value="죽">죽</option>
+        <option value="밥">밥</option>
+        <option value="간식">간식</option>
+        <option value="국">국</option>
+        <option value="반찬">반찬</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">요리 이름 <span class="req">*</span></label>
+      <input type="text" class="finput" id="f_title" placeholder="예: 단호박 미음" />
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">재료 <span class="req">*</span></label>
+      <textarea class="ftarea" id="f_ings" rows="4"
+        placeholder="한 줄에 하나씩&#10;쌀 30g&#10;단호박 50g&#10;물 200ml"></textarea>
+      <div class="hint">한 줄에 재료 하나씩</div>
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">조리법 <span class="req">*</span></label>
+      <textarea class="ftarea" id="f_steps" rows="6"
+        placeholder="한 줄에 한 단계씩&#10;쌀을 30분 불리기&#10;단호박을 쪄서 으깨기&#10;냄비에 넣고 끓이기"></textarea>
+      <div class="hint">번호 없이 입력해도 돼요</div>
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">팁 <span class="opt">(선택)</span></label>
+      <input type="text" class="finput" id="f_tip" placeholder="추가 팁이나 메모" />
+    </div>
+
+    <div class="fgrp">
+      <label class="flabel">출처 <span class="opt">(선택)</span></label>
+      <input type="text" class="finput" id="f_src" placeholder="예: @인스타계정" />
+    </div>
+
+    <button class="save-btn" onclick="saveRecipe()">저장하기 🌿</button>
+  </div>
+</div>
+
+<script>
+/* ── SEED DATA ── */
+const SEED = [
+  // ── 기존 4개 (@san_the_lion) ──
+  { id:'s1', emoji:'🍗', category:'죽', title:'닭고기김죽', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['닭고기살 30g','채수 120ml','애호박 30g','밥 90g','아기간장 반스푼','참기름 반스푼','깨가루 조금','잘게 부순 김가루'],
+    steps:['닭고기살 30g 끓는 물에 1분 데치고 작게 자르거나 손으로 찢어두기','채수 120ml에 애호박 30g, 밥 90g, 닭고기, 아기간장 반스푼 넣고 푹 끓이기','원하는 농도가 되면 불 끄고 참기름 반스푼, 깨가루 조금, 잘게 부순 김가루 넣고 섞기'],
+    tip:'' },
+  { id:'s2', emoji:'🫕', category:'밥', title:'매생이리조또', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['매생이 1g','현미유 조금','다진마늘 반스푼','우유 60ml','밥 90g','아기소금 한꼬집','아기치즈 한장'],
+    steps:['매생이 1g 물에 불린 뒤 한번 씻어두기','예열한 팬에 현미유 조금 두르고 다진마늘 반스푼 약불에 타지 않게 볶기','우유 60ml, 밥 90g, 매생이, 아기소금 한꼬집 넣어 볶기','원하는 농도가 되면 아기치즈 한장 넣고 잘 녹이며 섞기'],
+    tip:'다진마늘과 함께 소고기나 채소, 버섯 같이 볶아서 만들어도 좋아요' },
+  { id:'s3', emoji:'🍠', category:'간식', title:'고구마치즈빵', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['우유 50ml','아기치즈 한장','익힌 고구마 100g','쌀가루 15g','달걀 한알'],
+    steps:['우유 50ml에 아기치즈 한장 넣고 전자레인지 30초 돌려 치즈 녹이기','녹은 치즈 저어서 잘 섞어주고 익힌 고구마 100g 넣어 으깨기','쌀가루 15g, 달걀 한알 넣어 섞기','균일하게 섞인 반죽이 되면 탕탕 쳐서 기포 빼고 전자레인지 2분 먼저 돌려 상태 확인 후 시간 추가하기'],
+    tip:'저는 2분 30초 돌렸어요' },
+  { id:'s4', emoji:'🍄', category:'죽', title:'버섯들깨죽', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['채수 120ml','밥 90g','새송이버섯 60g','채소 20g','아기간장 반스푼','들깨가루 반스푼','들기름 반스푼'],
+    steps:['채수 120ml에 밥 90g, 새송이버섯 60g, 채소 20g, 아기간장 반스푼 넣기','죽이 끓으면 들깨가루 반스푼 넣기','원하는 죽 농도가 되면 불 끄고 들기름 반스푼 둘러 잘 섞어주기'],
+    tip:'저는 새송이버섯 썼는데 느타리버섯 등 다른 종류 써주셔도 좋아요' },
+
+  // ── @san_the_lion 추가 ──
+  { id:'s12', emoji:'🥬', category:'반찬', title:'시금치페스토', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['시금치 200g','잣 80g','엑스트라버진 올리브유 160ml','다진마늘 한스푼','알룰로스나 올리고당 한스푼','아기치즈 한장'],
+    steps:['시금치 200g 끓는 물에 30초 데치기','데친 시금치 찬물에 담아 한김 식히고 손으로 꾹꾹 눌러 물기 짜기','믹서기나 블렌더에 데친 시금치, 잣 80g, 엑스트라버진 올리브유 160ml, 다진마늘 한스푼, 알룰로스나 올리고당 한스푼, 아기치즈 한장 넣고 곱게 갈기'],
+    tip:'알룰로스나 올리고당은 생략 가능. 잣 대신 캐슈넛 사용 가능. 일주일 안에 먹을 건 냉장보관, 나머지는 큐브틀에 소분해서 냉동 (냉동 권장 2주)' },
+  { id:'s13', emoji:'🦐', category:'반찬', title:'새우두부밥전', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['새우살 50g','애호박 20g','달걀 한알','밥 70g','아기소금 한꼬집','현미유 조금'],
+    steps:['새우살 50g, 애호박 20g 다지거나 작게 자르기','달걀 한알 풀고 새우살, 애호박, 밥 70g, 아기소금 한꼬집 넣어 잘 섞기','예열한 팬에 현미유 조금 골고루 두르고 반죽 올리기','약불에 타지 않게 앞뒤로 노릇하게 굽기'],
+    tip:'' },
+  { id:'s14', emoji:'🥩', category:'반찬', title:'소고기두부볼', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['다진 소고기 90g','다진 양파 20g','두부 30g','아기소금 한꼬집'],
+    steps:['다진 소고기 90g에 다진 양파 20g, 물기 짜며 으깬 두부 30g, 아기소금 한꼬집 넣고 서로 찰지게 붙도록 치대기','아기 한입 크기로 동그랗게 빚기','예열한 에어프라이어 170도에 10분 돌리고 뒤집어서 5분 더 돌리기'],
+    tip:'오버쿡 되지 않도록 10분 후 상태 체크. 에어프라이어 없으면 프라이팬에 기름 살짝 두른 뒤 약불로 익혀도 괜찮아요' },
+  { id:'s15', emoji:'🍄', category:'반찬', title:'갈릭버터버섯구이', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['양파 20g','새송이버섯 50g','느타리버섯 50g','현미유 조금','다진마늘 반스푼','무염버터 반스푼'],
+    steps:['양파 20g, 새송이버섯 50g, 느타리버섯 50g 작게 잘라두기','예열한 팬에 현미유 조금 두르고 약불에 다진마늘 반스푼, 양파 볶기','양파가 투명하게 익으면 버섯, 무염버터 반스푼 넣고 버터 코팅하듯 볶기'],
+    tip:'' },
+  { id:'s16', emoji:'🍳', category:'죽', title:'소고기달걀죽', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['다진 소고기 30g','다진 채소 20g','채수 120ml','밥 90g','아기간장 반스푼','달걀 한알','참기름 반스푼','깨가루 조금','현미유 조금'],
+    steps:['현미유 조금 냄비에 두르고 다진 소고기 30g 볶다가 다진 채소 20g 볶기','소고기, 채소가 얼추 익으면 채수 120ml, 밥 90g, 아기간장 반스푼 넣고 끓이기','달걀 한알 깨 넣고 잠시 기다렸다가 휘저으며 익히기','원하는 농도가 되면 불 끄고 참기름 반스푼, 깨가루 조금 뿌려 섞기'],
+    tip:'' },
+  { id:'s17', emoji:'🌶️', category:'간식', title:'고구마빵', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['달걀 한알','으깬 고구마 100g','우유 30ml','쌀가루 30g'],
+    steps:['전자레인지 찜기에 달걀 한알 풀고 으깬 고구마 100g, 우유 30ml, 쌀가루 30g 넣어 균일한 반죽이 될 때까지 섞기','탕탕 쳐 기포 빼주고 전자레인지 2분 30초 돌리기'],
+    tip:'오버쿡 방지를 위해 2분 먼저 돌리고 상태 확인 후 시간 추가' },
+  { id:'s18', emoji:'🎃', category:'죽', title:'단호박오트밀죽', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['오트밀 4스푼','우유 50ml','찐 단호박 100g','우유 100ml (추가)'],
+    steps:['오트밀 4스푼에 우유 50ml 붓고 전자레인지 30초 돌려 불리기','냄비에 불린 오트밀 넣고 찐단호박 100g, 우유 100ml 추가하기','약불로 끓이며 원하는 농도 끓여주기'],
+    tip:'' },
+  { id:'s19', emoji:'🦐', category:'죽', title:'새우채소죽', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['냉동 새우살 50g','채수 120ml','밥 90g','다진 채소 30g','아기간장 반스푼','참기름 반스푼','깨가루 조금'],
+    steps:['냉동 새우살 50g 해동&손질 후 작게 자르기','채수 120ml에 밥 90g, 새우살, 다진 채소 30g, 아기간장 반스푼 넣고 끓이기','원하는 농도가 되면 불 끄고 참기름 반스푼, 깨가루 조금 넣어 섞기'],
+    tip:'' },
+  { id:'s20', emoji:'🍌', category:'간식', title:'바나나오트밀팬케이크', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['바나나 한개','오트밀 30g','우유 30ml','달걀 한알','무염버터 조금'],
+    steps:['바나나, 오트밀 30g, 우유 30ml, 달걀 한알 블렌더나 믹서기로 곱게 갈아 반죽 만들기','팬에 무염버터 조금 녹이고 약불에 앞뒤로 노릇하게 굽기'],
+    tip:'' },
+  { id:'s21', emoji:'🥕', category:'반찬', title:'당근볶음', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['당근 110g','현미유 조금','아기소금 한꼬집','들기름 반스푼','깨가루 조금'],
+    steps:['당근 110g 채썰고 작게 자르기','예열한 팬에 현미유 조금 두르고 당근, 아기소금 한꼬집 넣어 달달 볶기','아기가 무른 식감 선호하면 당근이 충분히 물러질 때까지 물 추가하며 졸여주기','아기 취향에 맞는 무르기가 되면 불 끄고 들기름 반스푼, 깨가루 조금 넣기'],
+    tip:'냉장 3일, 냉동 2주 보관 가능' },
+
+  // ── @famille_et_bebe ──
+  { id:'s5', emoji:'🥬', category:'밥', title:'삭슈카덮밥', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['토마토 50g','밥 80g','계란 한알','냉털야채 30g','아기치즈 한장','채수 30g'],
+    steps:['토마토를 다져서 준비하기','찜기에 밥, 토마토, 계란, 야채, 아기치즈, 채수 넣고 전자레인지 3분 돌려주면 완성'],
+    tip:'' },
+  { id:'s6', emoji:'🫙', category:'밥', title:'아기낫또덮밥', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['아기낫또 반컵~한컵','다진야채 50g (애호박, 알배추)','채수 20g','김자반','밥'],
+    steps:['찜기에 밥, 다진야채, 채수 넣고 전자레인지 3분 돌리기','여기에 낫또, 김자반 추가해서 슥~비벼주면 완성'],
+    tip:'' },
+  { id:'s7', emoji:'🍅', category:'밥', title:'토마토리조또', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['방울토마토 35g','양파 15g','소고기다짐육 20g','밥 80g','아기치즈 한장','채수 20g'],
+    steps:['방울토마토, 양파는 다져서 준비하기','찜기에 밥>다진야채>소고기>채수 넣고 전자레인지 2분 30초','아기치즈 한장 추가해서 30초 더 돌려주면 완성'],
+    tip:'' },
+  { id:'s8', emoji:'🍅', category:'밥', title:'연두부그라탱밥', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['연두부 40g','토마토 3알(45g)','소고기다짐육 15g','채수 30g','밥 80g','아기치즈 한장','기버터 반티스푼'],
+    steps:['토마토는 다져서 준비하기','찜기에 밥>연두부>토마토>소고기다짐육>채수 넣고 전자레인지 2분 30초','여기에 기버터, 아기치즈 추가해서 30초 더 돌려주면 완성'],
+    tip:'' },
+  { id:'s9', emoji:'🍎', category:'밥', title:'소고기사과밥', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['사과 반개 60g','밥 70g','소고기 30g','채수 40g'],
+    steps:['사과는 다져서 준비하기 (사과퓨레 대체 가능)','찜기에 밥>사과>소고기>채수 넣고 전자레인지 3분 돌려주면 완성'],
+    tip:'' },
+  { id:'s10', emoji:'🍆', category:'밥', title:'라따뚜이덮밥', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['토마토 45g','가지 25g','애호박 30g','소고기다짐육 20g','채수 40g','밥 70g'],
+    steps:['야채는 아기가 먹는 입자감으로 손질하기','찜기에 밥>야채>고기>채수 넣고 전자레인지 3분 돌리면 완성'],
+    tip:'' },
+  { id:'s11', emoji:'🥩', category:'반찬', title:'한우볼감자전', source:'@famille_et_bebe', at:'2025-01-01',
+    ingredients:['소고기다짐육 35g','찐 감자 70g','감자전분 한스푼','치즈 한장'],
+    steps:['소고기 다짐육에 찐 감자, 감자전분, 치즈 넣어 다 같이 으깨서 섞기','팬에 오일 넉넉히 두르고 반죽 올려 한쪽 면이 잘 익으면 뒤집기','앞 뒤로 꾹꾹 눌러 얇게 구워주면 완성'],
+    tip:'얇게 구워서 냉동 보관, 먹을 때 빈 후라이팬에 구워주기 (물 한두스푼 추가)' },
+
+  // ── @ldoimom_91 ──
+  { id:'s22', emoji:'🎃', category:'죽', title:'단호박오트밀치즈죽', source:'@ldoimom_91', at:'2025-01-01',
+    ingredients:['냉동 단호박 2-3조각','우유 100ml','퀴오트 30g','아기치즈 한장'],
+    steps:['냉동단호박 2-3조각 전자레인지 1분 30초 데워주기','우유 100ml, 퀴오트 30g 넣어 갈아주기','아기치즈 한장 넣어 전자레인지 1분 더 데우면 완성'],
+    tip:'' },
+
+  // ── 기타 ──
+  { id:'s23', emoji:'🫐', category:'간식', title:'블루베리바나나팬케이크', source:'', at:'2025-01-01',
+    ingredients:['바나나 1개 (55g)','블루베리 10알','계란 1알','밀가루 30g','오일 약간'],
+    steps:['블루베리 빼고 모든 재료 블렌더에 넣어 갈기','프라이팬에 오일 두르고 약불에 블루베리 먼저 놓고 주변에 반죽 짜주기','앞뒤로 뒤집어 구워주거나 뚜껑 덮어 촉촉히 익히기'],
+    tip:'남은 반죽에 땅콩버터 한스푼 넣어 전자레인지빵으로도 활용 가능. 에프조리 추천 (1분 30초씩 3번 끊어 조리)' },
+  { id:'s24', emoji:'🍗', category:'국', title:'밥솥누룽지닭백숙', source:'', at:'2025-01-01',
+    ingredients:['닭 1.5마리','대파 15cm 5-6개','통마늘 8알','대추 3알','정수물 450g','찹쌀 250g'],
+    steps:['찹쌀은 깨끗하게 씻어 마른불림 30분','닭은 엉덩이부분, 날개끝, 목뼈 잘라 잡내 잡아주기','압력밥솥 내솥에 불린 찹쌀 깔고 닭-파-닭-파-마늘-대추 순으로 넣고 정수물 붓기','압력밥솥으로 조리하기'],
+    tip:'6인용 밥솥 기준. 레시피 일부가 이미지에서 잘려 있어요' },
+
+  // ── @jian_meals ──
+  { id:'s25', emoji:'🥦', category:'반찬', title:'두부브로콜리무침', source:'@jian_meals', at:'2025-01-01',
+    ingredients:['두부','브로콜리','땅콩버터 조금'],
+    steps:['두부랑 브로콜리를 데쳐줘요','물기를 짜주고 으깨줘요','땅콩버터 쪼끔 넣고 비벼주면 끝'],
+    tip:'' },
+
+  // ── @bbo.table ──
+  { id:'s26', emoji:'🍠', category:'간식', title:'고구마뇨끼', source:'@bbo.table', at:'2025-01-01',
+    ingredients:['고구마 90g','노른자 한알','옥수수전분 1T','무염버터 8g','양파 40g','우유 또는 분유 140ml','아기치즈 한장'],
+    steps:['찜기에 고구마 90g 깍둑썰기하고 물 조금 부어 뚜껑덮어 전자레인지 4분','물 버려주고 노른자 한알, 옥수수전분 1T 넣고 잘 섞기 (질퍽하면 전분 추가)','뇨끼 모양 만들기','물 끓여서 뇨끼 넣어 둥둥 뜨면 건져내기','팬에 무염버터 8g 녹여 양파 40g 썰어 볶기','우유 또는 분유 140ml, 아기치즈 한장 넣고 치즈 녹이기','뇨끼 넣어 팔팔 끓여주면 완성'],
+    tip:'조금 식으면 꾸덕해져요' },
+
+  // ── @maisondeella ──
+  { id:'s27', emoji:'🍗', category:'반찬', title:'닭안심소시지', source:'@maisondeella', at:'2025-01-01',
+    ingredients:['닭안심 170g','파프리카 150g','양파 40g','쌀가루 2T'],
+    steps:['닭안심은 힘줄을 제거하고 잘게 다지거나 믹서로 갈기','파프리카와 양파는 아주 곱게 다져 물기 빼기','볼에 닭안심, 파프리카, 양파 넣고 섞기','쌀가루를 넣어 반죽의 점성 잡기','종이호일을 펼쳐 반죽을 담고 양 끝을 단단히 꼬아주기','찜기에 넣어 중불에서 20분 정도 찌기','10분 정도 뜸 들인 후 꺼내서 먹기 좋게 썰어 마무리'],
+    tip:'' },
+  { id:'s28', emoji:'🥬', category:'반찬', title:'배추나물무침', source:'@maisondeella', at:'2025-01-01',
+    ingredients:['배추 2장','참기름 약간','들깨가루 소량 (선택)'],
+    steps:['배추는 깨끗이 씻어서 준비','끓는 물에 배추를 넣고 30초~1분 살짝 데치기','찬물에 헹군 뒤 물기를 꼭 짜기','먹기 좋게 잘게 다지기','볼에 배추 넣고 참기름 한두 방울 넣기','들깨가루 소량 추가하면 고소함이 더 좋아요','조몰조몰 부드럽게 무쳐주면 완성'],
+    tip:'들깨가루를 소량 추가하면 고소함이 더해져요' },
+
+  // ── 도하맘레시피 ──
+  { id:'s29', emoji:'🍅', category:'밥', title:'토마토달걀덮밥', source:'도하맘레시피', at:'2025-01-01',
+    ingredients:['토마토 100g','양파 20g','버섯 20g','계란 1개','물 200ml','전분물 10ml'],
+    steps:['양파+버섯 볶고 토마토 넣기','물 넣고 끓으면 계란 풀기','전분물로 농도 조절'],
+    tip:'총 200ml, 2회분량' },
+  { id:'s30', emoji:'🥬', category:'밥', title:'시금치버섯리조또', source:'도하맘레시피', at:'2025-01-01',
+    ingredients:['시금치 20g','양파 20g','버섯 40g','밥 60g','물 50ml','우유 100ml','치즈 반장'],
+    steps:['시금치+물 믹서 갈기','양파 볶기','버섯+시금치물 넣고 끓이기','밥+우유+치즈 넣어 마무리'],
+    tip:'' },
+  { id:'s31', emoji:'🍜', category:'국', title:'소고기쌀국수', source:'도하맘레시피', at:'2025-01-01',
+    ingredients:['쌀국수면 40g','소고기 40g','채수 500ml','야채 60g'],
+    steps:['채수로 육수 끓이기','소고기 살짝 데쳐 건지기','쌀국수+야채 넣고 10분 끓이기','마지막에 건진 소고기 다시 넣기'],
+    tip:'' },
+
+  // ── 기타 (저장됨) ──
+  { id:'s32', emoji:'🌿', category:'죽', title:'오트밀미역죽', source:'', at:'2025-01-01',
+    ingredients:['물 또는 채수 400ml','아기자른미역 1g','오트밀 30g','계란 1개','소금 약간','참기름 1t'],
+    steps:['물 또는 채수 400ml 끓이기','아기자른미역 1g, 오트밀 30g 넣고 센불 2분','계란 1개 확 풀어넣고 소금간 (약불로 조절)','참기름 1t로 마무리 (후리가케나 김가루도 ok)'],
+    tip:'계란 알러지 있다면 계란 생략하고 아기참치나 크래미·게살로 대체 가능. 미역 입자가 크다면 따뜻한 물에 1분 불린 뒤 총총 잘라 사용' },
+  { id:'s33', emoji:'🥚', category:'밥', title:'순두부계란덮밥', source:'', at:'2025-01-01',
+    ingredients:['계란 1개','쪽파(대파) 3g','순두부 140g','팽이버섯 15g (생략 가능)','채수 or 물 15ml','아기간장 15ml','아가베시럽 5ml','참기름 5ml'],
+    steps:['오일 두른 팬에 계란 1개, 쪽파 3g 넣고 스크램블처럼 만들기','순두부 140g 넣어 숭덩숭덩 자르기 (팽이버섯 있으면 함께 자르기)','빈 곳에 채수 15ml+아기간장 15ml+아가베시럽 5ml 덮밥소스 넣고 30초 뒤 섞기','마지막에 참기름 5ml 넣기'],
+    tip:'팽이버섯 없으면 생략 또는 양파 대체 가능' },
+  { id:'s34', emoji:'🍲', category:'죽', title:'꼬소한된장죽', source:'', at:'2025-01-01',
+    ingredients:['물 or 채수 300ml','밥 120g','두부 80g','팽이버섯 30g (생략 가능)','아기된장 1t','참기름 5ml'],
+    steps:['물 or 채수 300ml 끓이기','밥 120g 넣고 팔팔 끓이다가 으깬 두부 80g 넣기','팽이버섯 30g, 아기된장 1t 풀어서 넣기','원하는 농도 되면 불 끄고 참기름 5ml 마무리'],
+    tip:'간은 드셔보시고 가감. 팽이버섯 없으면 생략 또는 양파 대체' },
+  { id:'s35', emoji:'🌿', category:'밥', title:'미역크림리조또', source:'', at:'2025-01-01',
+    ingredients:['채수 200ml','자른미역 1g (불리기 전)','다진양파 30g','밥 140g (2인분)','우유 100ml','아기치즈 반장','소금 약간'],
+    steps:['채수 200ml 끓이고 자른미역 1g, 다진양파 30g, 밥 140g 넣고 센불로 조리','점성이 꾸덕해지면 우유 100ml 넣고 약불로 조리','치즈 반장 올려주고 전자레인지 20초 후 섞기'],
+    tip:'1인분은 반으로 줄여 조리. 미역 입자가 크다면 따뜻한 물에 불려 가위로 잘라 사용' },
+
+  // ── @san_the_lion 추가 ──
+  { id:'s36', emoji:'🍌', category:'간식', title:'바나나당근빵', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['바나나 한개 (약 80g)','당근 20g','쌀가루 20g','우유 20ml','달걀 한알'],
+    steps:['당근 20g 다지기','전자레인지 찜기에 바나나 으깨고 다진 당근, 쌀가루 20g, 우유 20ml, 달걀 한알 넣고 잘 섞기','전자레인지에 2분 먼저 돌리고 상태 확인 후 시간 추가하기'],
+    tip:'저는 2분 30초 돌렸어요' },
+  { id:'s37', emoji:'🌀', category:'반찬', title:'매생이달걀말이', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['매생이 1g','달걀 두알','현미유 조금'],
+    steps:['매생이 1g 물에 불리기','달걀 두알 풀고 불린 매생이 넣어 잘 섞기','팬에 현미유 조금 두르고 키친타울로 잘 펴발라준 뒤 달걀물 반 정도 부어 완전히 익기 전에 말아주기','빈 공간에 달걀물 부어서 끝까지 말기','한김 식힌 뒤 한입 크기로 자르기'],
+    tip:'' },
+  { id:'s38', emoji:'🥕', category:'반찬', title:'당근김전', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['당근 100g','밀가루 두스푼','물 두스푼','김가루 조금 (잘게 부순 것)','현미유 조금'],
+    steps:['당근 100g 채썰고 가위로 한번 더 잘게 자르기','밀가루, 물 두스푼씩 넣고 잘 섞은 뒤 잘게 부순 김가루도 넣기','예열한 팬에 현미유 조금 두르고 약불에 두번 나누어 부쳐주기'],
+    tip:'밀가루 대신 오트밀가루, 쌀가루, 부침가루 대체 가능' },
+  { id:'s39', emoji:'🥩', category:'국', title:'소고기미역국', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['미역 1-2g','다진마늘 반스푼','다진 소고기 40g','아기간장 반스푼','채수 500ml (50ml+450ml)'],
+    steps:['미역 1-2g 물에 20분 이상 불린 뒤 잘게 잘라두기','냄비에 채수 50ml, 다진마늘 반스푼, 다진 소고기 40g 넣고 소고기가 반 정도 익으면 잘라둔 미역, 아기간장 반스푼 넣어 볶듯이 끓이기','채수 450ml 부어주고 끓어오르면 거품 걷어내 맑게 팔팔 끓이기'],
+    tip:'' },
+  { id:'s40', emoji:'🍎', category:'밥', title:'소고기사과소스리조또', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['현미유 조금','다진마늘 1/4스푼','다진 소고기 20g','우유 45ml','수제사과소스 70g','밥 90g','아기치즈 한장'],
+    steps:['팬에 현미유 조금 두르고 다진마늘 1/4스푼 약불에 타지 않게 볶기','다진 소고기 20g 넣고 볶다가 얼추 익으면 우유 45ml, 수제사과소스 70g, 밥 90g 넣어 볶기','원하는 농도가 되면 아기치즈 한장 넣어 잘 녹이며 섞기'],
+    tip:'수제사과소스를 큐브로 냉동해두면 편리해요' },
+  { id:'s41', emoji:'🍎', category:'반찬', title:'수제사과소스', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['사과 두개 (250-300g)','당근 반개 (약 120g)','양배추 60g'],
+    steps:['사과, 당근, 양배추를 씻고 적당한 크기로 깍둑썰기','냄비에 물 넉넉히 담고 끓기 시작하면 당근 먼저 넣기','5분 뒤 양배추 넣기','5분 뒤 사과 넣고 15-20분 푹 끓이기','불 끄고 20분 정도 놔두며 잔열로 더 익히기','믹서기 or 블렌더에 모든 재료와 채수 한국자 담고 곱게 갈기','큐브에 소분해 담고 얼리기 (저는 70g씩 소분)'],
+    tip:'당근, 양배추 더 많이 넣어도 돼요. 큐브 소분량은 아기 먹는 양이나 조리시 쓰는 양 고려해 취향껏' },
+  { id:'s42', emoji:'🍞', category:'간식', title:'치즈롤식빵', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['쌀식빵 한장','땅콩버터 (100% 땅콩)','아기치즈 한장'],
+    steps:['쌀식빵 한장 테두리 잘라내고 밀대로 밀어 얇게 펴기','땅콩버터 바르고 아기치즈 한장 얹어 돌돌 말기','꾹꾹 눌러 모양 잡아준 후 한입 크기로 자르기'],
+    tip:'실온의 찰기 있는 식빵 써주세요. 냉동했던 식빵은 찰기가 모자라 잘 안 붙어요' },
+  { id:'s43', emoji:'🍳', category:'밥', title:'두부달걀찜밥', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['달걀 한알','채수 30ml','으깬 두부 60g','밥 70g','아기간장 반스푼','천연버섯분말 1/4스푼 (생략 가능)','참기름 반스푼','깨가루 조금'],
+    steps:['전자레인지 찜기에 달걀 한알 풀고 채수 30ml, 으깬 두부 60g, 밥 70g, 아기간장 반스푼, 천연버섯분말 1/4스푼 넣고 섞기','전자레인지에 2분 돌리고 상태 확인 후 시간 추가 (저는 2분 30초)','먹이기 전에 참기름 반스푼, 깨가루 조금 넣어 섞기'],
+    tip:'버섯분말 생략 가능' },
+  { id:'s44', emoji:'💚', category:'반찬', title:'수제대파크림소스', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['대파 한대','양파 반개','찐감자 100g','우유 100ml (반컵)','아기치즈 한장'],
+    steps:['대파, 양파 작게 잘라 프라이팬에서 기름 없이 볶기','타기 전에 물 반컵 붓고 물기 없어질 때까지 볶아 푹 익히기','믹서기나 핸드블렌더에 구운 대파, 양파, 찐감자 100g, 우유 100ml 넣고 곱게 갈기','프라이팬에 옮겨 아기치즈 한장 더해 중약불로 끓여 뭉근하게 졸이기','치즈가 잘 녹고 원하는 소스 농도가 되면 완성'],
+    tip:'큐브에 소분해 냉동 보관. 덮밥: 밥 90g + 소스 70g / 스프: 소스 60g + 우유 15ml' },
+  { id:'s45', emoji:'🍌', category:'간식', title:'바나나치즈빵', source:'@san_the_lion', at:'2025-01-01',
+    ingredients:['바나나 한개','달걀 한알','밀가루 두스푼','우유 두스푼','아기치즈 한장'],
+    steps:['바나나, 달걀, 밀가루 두스푼, 우유 두스푼 잘 섞어 반죽 만들기','전자레인지 찜기에 담고 아기치즈 한장 얹어서 전자레인지 2분 돌리기','상태 확인 후 시간 추가하기'],
+    tip:'저는 2분 30초 돌렸어요' },
+  { id:'s46', emoji:'🥩', category:'반찬', title:'양파소고기스틱', source:'', at:'2025-01-01',
+    ingredients:['소고기 다짐육 200g','양파 한개 (170g)','전분가루 2T'],
+    steps:['초퍼에 양파 먼저 갈아주기','다짐육, 양파, 전분가루 넣고 곱게 갈기','스틱 모양 잘 만들어서 에어프라이어 170도 10분, 뒤집어서 170도 5분 구워주면 완성'],
+    tip:'' }
+];
+
+/* ── STORAGE ── */
+const KEY    = 'eunho_v4';
+const PHKEY  = 'eunho_photo';
+const REVKEY = 'eunho_reviews';
+
+function getAll() {
+  try { return JSON.parse(localStorage.getItem(KEY) || 'null') || SEED; }
+  catch { return SEED; }
+}
+
+function setAll(data) { localStorage.setItem(KEY, JSON.stringify(data)); }
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+/* ── 후기 저장소 ── */
+function getReviews() {
+  try { return JSON.parse(localStorage.getItem(REVKEY) || '{}'); }
+  catch { return {}; }
+}
+function getReview(id) { return getReviews()[id] || null; }
+function setReview(id, data) {
+  const all = getReviews();
+  all[id] = data;
+  localStorage.setItem(REVKEY, JSON.stringify(all));
+}
+
+/* ── HEADER PHOTO ── */
+function setPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const src = e.target.result;
+    localStorage.setItem(PHKEY, src);
+    applyPhoto(src);
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyPhoto(src) {
+  const img  = document.getElementById('photoImg');
+  const ph   = document.getElementById('photoPlaceholder');
+  img.src    = src;
+  img.style.display  = 'block';
+  ph.style.display   = 'none';
+}
+
+// 저장된 사진 불러오기
+const savedPhoto = localStorage.getItem(PHKEY);
+if (savedPhoto) applyPhoto(savedPhoto);
+
+/* ── FAVORITES ── */
+const FAVKEY = 'eunho_favs';
+function getFavs() {
+  try { return JSON.parse(localStorage.getItem(FAVKEY) || '[]'); }
+  catch { return []; }
+}
+function isFav(id) { return getFavs().includes(id); }
+function toggleFav(id, e) {
+  e.stopPropagation();
+  const favs = getFavs();
+  const idx  = favs.indexOf(id);
+  if (idx === -1) favs.push(id); else favs.splice(idx, 1);
+  localStorage.setItem(FAVKEY, JSON.stringify(favs));
+  render();
+}
+
+/* ── CATEGORY TAB ── */
+let activeCat = '전체';
+function setTab(btn) {
+  activeCat = btn.dataset.cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t === btn));
+  render();
+}
+
+/* ── SEARCH ── */
+let q = '';
+function onSearch() {
+  q = document.getElementById('searchInput').value.trim();
+  document.getElementById('searchClear').classList.toggle('on', q.length > 0);
+  render();
+}
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  q = '';
+  document.getElementById('searchClear').classList.remove('on');
+  render();
+}
+
+/* ── UTILS ── */
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+function hi(text) {
+  if (!q) return esc(text);
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return esc(text).replace(re, '<mark>$1</mark>');
+}
+function catClass(c) {
+  return ['죽','밥','간식','국','반찬'].includes(c) ? `cat-${c}` : 'cat-기타';
+}
+
+/* ── RENDER GRID ── */
+function render() {
+  const all  = getAll();
+  const ql   = q.toLowerCase();
+
+  // 카테고리 필터 먼저, 그 다음 검색어
+  const catFiltered = activeCat === '전체'
+    ? all
+    : activeCat === '즐겨찾기'
+    ? all.filter(r => isFav(r.id))
+    : all.filter(r => {
+        const rc = ['죽','밥','간식','국','반찬'].includes(r.category) ? r.category : '기타';
+        return rc === activeCat;
+      });
+
+  const list = ql
+    ? catFiltered.filter(r => r.title.toLowerCase().includes(ql) ||
+                      r.ingredients.some(i => i.toLowerCase().includes(ql)) ||
+                      r.category.toLowerCase().includes(ql))
+    : catFiltered;
+
+  const grid  = document.getElementById('grid');
+  const stats = document.getElementById('statsEl');
+
+  if (all.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">🍽️</div><h3>레시피가 없어요</h3><p>아래 + 버튼으로 추가해보세요</p></div>`;
+    stats.textContent = '';
+    return;
+  }
+  if (list.length === 0) {
+    const emptyMsg = activeCat === '즐겨찾기'
+      ? `<div class="empty"><div class="empty-icon">⭐</div><h3>즐겨찾기가 없어요</h3><p>레시피 카드의 ☆ 버튼으로<br>마음에 드는 레시피를 저장해보세요</p></div>`
+      : `<div class="empty"><div class="empty-icon">🔍</div><h3>"${esc(q)}"</h3><p>해당하는 레시피가 없어요</p></div>`;
+    grid.innerHTML = emptyMsg;
+    stats.textContent = `총 ${all.length}개`;
+    return;
+  }
+
+  grid.innerHTML = list.map((r, i) => `
+    <div class="recipe-card" onclick="openDetail('${r.id}')" style="animation-delay:${Math.min(i,8)*.04}s">
+      <div class="card-thumb ${catClass(r.category)}" style="position:relative">
+        ${r.emoji || '🍱'}
+        <span class="cat-badge">${esc(r.category)}</span>
+        <button class="star-btn" onclick="toggleFav('${r.id}',event)" title="즐겨찾기">${isFav(r.id) ? '⭐' : '☆'}</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${hi(r.title)}</div>
+        <div class="card-ings">${r.ingredients.map(x => hi(x)).join(' · ')}</div>
+        ${(rev => rev ? `<div style="margin-top:6px;font-size:11px;color:var(--green);font-weight:700">${RATING_EMOJI[rev.rating]} ${rev.rating}</div>` : '')(getReview(r.id))}
+      </div>
+    </div>
+  `).join('');
+
+  const catLabel = activeCat === '전체' ? '' : ` · ${activeCat}`;
+  stats.textContent = ql ? `"${q}" 검색결과 ${list.length}개` : `레시피 ${list.length}개${catLabel}`;
+}
+
+/* ── DETAIL ── */
+function openDetail(id) {
+  const r = getAll().find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('dc').innerHTML = `
+    <div class="detail-hero ${catClass(r.category)}">${r.emoji || '🍱'}</div>
+    <div class="detail-body">
+      <div class="detail-row">
+        <span class="detail-cat">${esc(r.category)}</span>
+      </div>
+      <div class="detail-title">${hi(r.title)}</div>
+      <div class="sec">
+        <div class="sec-hdr">🛒 재료</div>
+        <div class="ing-grid">${r.ingredients.map(i=>`<span class="ing-chip">${hi(i)}</span>`).join('')}</div>
+      </div>
+      <div class="sec">
+        <div class="sec-hdr">👩‍🍳 조리법</div>
+        <div class="step-list">${r.steps.map((s,i)=>`
+          <div class="step-item">
+            <div class="step-num">${i+1}</div>
+            <div class="step-text">${hi(s)}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${r.tip ? `<div class="sec"><div class="tip-box">${esc(r.tip)}</div></div>` : ''}
+      ${r.source ? `<div class="src-tag">📌 ${esc(r.source)}</div>` : ''}
+      ${!r.id.startsWith('s') ? `<button class="del-btn" onclick="delRecipe('${r.id}')">삭제</button>` : ''}
+
+      ${reviewHTML(r.id)}
+    </div>`;
+  open2('db','ds');
+}
+function closeDetail() { close2('db','ds'); }
+
+/* ── 후기 UI 생성 ── */
+const RATINGS = ['다 먹음','절반 이상 먹음','절반 정도 먹음','거의 안먹음','안먹음'];
+const RATING_EMOJI = {'다 먹음':'😋','절반 이상 먹음':'🙂','절반 정도 먹음':'😐','거의 안먹음':'😕','안먹음':'🙅'};
+
+function reviewHTML(id) {
+  const rev = getReview(id);
+  const btns = RATINGS.map(v =>
+    `<button class="r-btn${rev && rev.rating===v ? ' on':''}" data-v="${v}" onclick="pickRating(this,'${id}')">${RATING_EMOJI[v]} ${v}</button>`
+  ).join('');
+  return `
+    <div class="review-sec" id="rev-${id}">
+      <div class="review-title">이 음식, 은호는 👶🏻</div>
+      <div class="rating-row">${btns}</div>
+      <textarea class="rev-comment" id="rcom-${id}" rows="3"
+        placeholder="먹으면서 어땠는지 기록해봐요…">${rev ? esc(rev.comment||'') : ''}</textarea>
+      <button class="rev-save" onclick="saveReview('${id}')">후기 저장</button>
+      ${rev ? `<div class="rev-saved-badge">✅ ${esc(rev.at)} 저장됨</div>` : ''}
+    </div>`;
+}
+
+function pickRating(btn, id) {
+  document.querySelectorAll(`#rev-${id} .r-btn`).forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function saveReview(id) {
+  const sel = document.querySelector(`#rev-${id} .r-btn.on`);
+  const comment = document.getElementById(`rcom-${id}`).value.trim();
+  if (!sel) { alert('먹은 양을 선택해주세요 👆'); return; }
+  setReview(id, {
+    rating:  sel.dataset.v,
+    comment: comment,
+    at:      new Date().toLocaleDateString('ko-KR')
+  });
+  // 배지 갱신
+  const sec = document.getElementById(`rev-${id}`);
+  let badge = sec.querySelector('.rev-saved-badge');
+  if (!badge) { badge = document.createElement('div'); badge.className='rev-saved-badge'; sec.appendChild(badge); }
+  badge.innerHTML = `✅ ${new Date().toLocaleDateString('ko-KR')} 저장됨`;
+  // 카드 갱신 (후기 표시 위해)
+  render();
+}
+
+/* ── ADD ── */
+let selEmoji = '🍚';
+function pickEmoji(btn) {
+  document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  selEmoji = btn.dataset.e;
+}
+function openAdd() {
+  selEmoji = '🍚';
+  document.querySelectorAll('.emoji-opt').forEach((b,i) => b.classList.toggle('on', i===0));
+  ['f_title','f_ings','f_steps','f_tip','f_src'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_cat').value = '죽';
+  open2('ab','as');
+  setTimeout(()=>document.getElementById('f_title').focus(), 380);
+}
+function closeAdd() { close2('ab','as'); }
+
+function saveRecipe() {
+  const title = document.getElementById('f_title').value.trim();
+  const ings  = document.getElementById('f_ings').value.trim();
+  const steps = document.getElementById('f_steps').value.trim();
+  if (!title) { alert('요리 이름을 입력해주세요.'); return; }
+  if (!ings)  { alert('재료를 입력해주세요.'); return; }
+  if (!steps) { alert('조리법을 입력해주세요.'); return; }
+
+  const all = getAll();
+  all.unshift({
+    id: uid(),
+    emoji: selEmoji,
+    category: document.getElementById('f_cat').value,
+    title,
+    ingredients: ings.split('\n').map(s=>s.trim()).filter(Boolean),
+    steps: steps.split('\n').map(s=>s.trim().replace(/^[\d]+[.)]\s*/,'')).filter(Boolean),
+    tip:    document.getElementById('f_tip').value.trim(),
+    source: document.getElementById('f_src').value.trim(),
+    at: new Date().toISOString().slice(0,10)
+  });
+  setAll(all);
+  closeAdd();
+  render();
+}
+
+function delRecipe(id) {
+  if (!confirm('이 레시피를 삭제할까요?')) return;
+  setAll(getAll().filter(r=>r.id!==id));
+  closeDetail();
+  render();
+}
+
+/* ── SHEET HELPERS ── */
+function open2(bdId, shId) {
+  document.getElementById(bdId).classList.add('open');
+  document.getElementById(shId).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function close2(bdId, shId) {
+  document.getElementById(bdId).classList.remove('open');
+  document.getElementById(shId).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeDetail(); closeAdd(); }
+});
+
+/* ── INIT ── */
+render();
+
+/* ── 서비스워커 등록 ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW 등록 완료'))
+      .catch(e => console.warn('SW 등록 실패:', e));
+  });
+}
+</script>
+</body>
+</html>
